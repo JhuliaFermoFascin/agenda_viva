@@ -1,9 +1,10 @@
 // pages/alunos.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/navbar';
 import Sidebar from '../components/sidebar';
 import Box from '@mui/material/Box';
 import { useRouter } from 'next/router';
+import { getAllAlunos } from '@/api/services/alunos';
 
 export default function Alunos() {
     const router = useRouter();
@@ -11,6 +12,29 @@ export default function Alunos() {
     const handleNavigation = (path) => {
         router.push(path);
     };
+
+    // EXEMPLO DE USO DA REQUEST:
+    const [data, setData] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const recuperarAlunos = async () => {
+        try {
+            setLoading(true);
+            const response = await getAllAlunos();
+            console.log(response);
+            setData(response);
+        } catch (error) {
+            console.error('Erro ao buscar os alunos:', error);
+            setError(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        recuperarAlunos();
+    }, []);
 
     return (
         <>
@@ -30,7 +54,14 @@ export default function Alunos() {
                 }}
             >
                 <h1>Cadastro de Alunos</h1>
-                {/* Conteúdo da página de Alunos */}
+                {loading ? (
+                    <p>Carregando...</p>
+                ) : error ? (
+                    <p>Erro ao carregar dados dos alunos.</p>
+                ) : (
+                    data && <pre>{data}</pre>
+                )}
+
             </Box>
         </>
     );
