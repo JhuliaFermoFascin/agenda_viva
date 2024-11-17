@@ -3,7 +3,8 @@ import endpoints from "@/api/endPoints";
 
 export const getAllAlunos = async () => {
     try {
-      return await api.get(endpoints.getAllAlunos());
+      const response = await api.get(endpoints.getAllAlunos());
+      return response.data;
     } catch (error) {
       console.error('Erro ao buscar os alunos:', error);
       throw error;
@@ -12,32 +13,36 @@ export const getAllAlunos = async () => {
 
 export const getAlunoById = async (alunoId) => {
     try {
-      return await api.get(endpoints.getAlunoById(alunoId));
+      const response = await api.get(endpoints.getAlunoById(alunoId));
+      return response.data;
     } catch (error) {
       console.error('Erro ao buscar aluno: ', error);
       throw error;
     }
 }
 
-export const createAluno = async () => {
+export const createAluno = async (data) => {
   try {
-    return await api.post(endpoints.addAluno());
+    const response = await api.post(endpoints.addAluno(), data);
+    return response.data;
   } catch (error) {
     console.error('Erro ao criar aluno: ', error);
   }
 }
 
-export const updateAluno = async () => {
+export const updateAluno = async (alunoId, data) => {
   try {
-    return await api.put(endpoints.updateAluno());
+    const response = await api.put(endpoints.updateAluno(alunoId), data);
+    return response.data;
   } catch (error) {
     console.error('Erro ao atualizar aluno: ', error);
   }
 }
 
-export const deleteAluno = async () => {
+export const deleteAluno = async (alunoId) => {
   try {
-    return await api.delete(endpoints.deleteAluno());
+    const response = await api.delete(endpoints.deleteAluno(alunoId));
+    return response.data;
   } catch (error) {
     console.error('Erro ao remover aluno: ', error);
   }

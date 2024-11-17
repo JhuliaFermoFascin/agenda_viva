@@ -3,7 +3,8 @@ import endpoints from "@/api/endPoints";
 
 export const getAllFuncionarios = async () => {
     try {
-      return await api.get(endpoints.getAllFuncionarios());
+      const response = await api.get(endpoints.getAllFuncionarios());
+      return response.data;
     } catch (error) {
       console.error('Erro ao buscar os funcionarios:', error);
       throw error;
@@ -12,32 +13,36 @@ export const getAllFuncionarios = async () => {
 
 export const getFuncionarioById = async (funcionarioId) => {
     try {
-      return await api.get(endpoints.getFuncionarioById(funcionarioId));
+      const response = await api.get(endpoints.getFuncionarioById(funcionarioId));
+      return response.data;
     } catch (error) {
       console.error('Erro ao buscar funcionario: ', error);
       throw error;
     }
 }
 
-export const createFuncionario = async () => {
+export const createFuncionario = async (data) => {
   try {
-    return await api.post(endpoints.addFuncionario());
+    const response = await api.post(endpoints.addFuncionario(), data);
+    return response.data;
   } catch (error) {
     console.error('Erro ao criar funcionario: ', error);
   }
 }
 
-export const updateFuncionario = async () => {
+export const updateFuncionario = async (funcionarioId, data) => {
   try {
-    return await api.put(endpoints.updateFuncionario());
+    const response = await api.put(endpoints.updateFuncionario(funcionarioId), data);
+    return response.data;
   } catch (error) {
     console.error('Erro ao atualizar funcionario: ', error);
   }
 }
 
-export const deleteFuncionario = async () => {
+export const deleteFuncionario = async (funcionarioId) => {
   try {
-    return await api.delete(endpoints.deleteFuncionario());
+    const response = await api.delete(endpoints.deleteFuncionario(funcionarioId));
+    return response.data;
   } catch (error) {
     console.error('Erro ao remover funcionario: ', error);
   }
