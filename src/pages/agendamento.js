@@ -47,6 +47,7 @@ export default function Agendamentos() {
     };
 
     const handleSubmit = async () => {
+        console.log('Payload: ', payloadData);
         try {
             setLoading(true);
             if (isEditing) {
@@ -96,6 +97,12 @@ export default function Agendamentos() {
         setIsEditing(true);
         setEditingId(agendamento.id);
     };
+
+    function formatarData(dataISO) {
+        if (!dataISO) return '';
+        const [ano, mes, dia] = dataISO.split('-');
+        return `${dia}/${mes}/${ano}`;
+    }
 
     useEffect(() => {
         recuperarAgendamentos();
@@ -203,7 +210,6 @@ export default function Agendamentos() {
                             <Table>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell>ID</TableCell>
                                         <TableCell>Aluno</TableCell>
                                         <TableCell>Funcionário</TableCell>
                                         <TableCell>Data</TableCell>
@@ -215,10 +221,9 @@ export default function Agendamentos() {
                                 <TableBody>
                                     {agendamentos.map((agendamento) => (
                                         <TableRow key={agendamento.id}>
-                                            <TableCell>{agendamento.id}</TableCell>
                                             <TableCell>{agendamento.id_aluno}</TableCell>
                                             <TableCell>{agendamento.id_funcionario}</TableCell>
-                                            <TableCell>{agendamento.data}</TableCell>
+                                            <TableCell>{formatarData(agendamento.data)}</TableCell>
                                             <TableCell>{agendamento.hora_inicio.split('T')[1].slice(0, 5)}</TableCell>
                                             <TableCell>{agendamento.hora_fim.split('T')[1].slice(0, 5)}</TableCell>
                                             <TableCell>
