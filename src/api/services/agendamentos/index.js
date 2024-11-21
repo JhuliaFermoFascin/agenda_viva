@@ -6,8 +6,7 @@ export const getAllAgendamentos = async () => {
       const response = await api.get(endpoints.getAllAgendamentos());
       return response.data;
     } catch (error) {
-      console.error('Erro ao buscar os agendamentos:', error);
-      throw error;
+      return error;
     }
 };
 
@@ -16,8 +15,7 @@ export const getAgendamentoById = async (agendamentoId) => {
       const response = await api.get(endpoints.getAgendamentoById(agendamentoId));
       return response.data;
     } catch (error) {
-      console.error('Erro ao buscar agendamento: ', error);
-      throw error;
+      return error;
     }
 }
 
@@ -32,7 +30,7 @@ export const createAgendamento = async (data) => {
     const response = await api.post(endpoints.addAgendamento(), dataFormatada);
     return response.data;
   } catch (error) {
-    console.error('Erro ao criar agendamento: ', error);
+    return error;
   }
 }
 
@@ -41,7 +39,7 @@ export const updateAgendamento = async (agendamentoId, data) => {
     const response = await api.put(endpoints.updateAgendamento(agendamentoId), data);
     return response.data;
   } catch (error) {
-    console.error('Erro ao atualizar agendamento: ', error);
+    return error;
   }
 }
 
@@ -50,6 +48,6 @@ export const deleteAgendamento = async (agendamentoId) => {
     const response = await api.delete(endpoints.deleteAgendamento(agendamentoId));
     return response.data;
   } catch (error) {
-    console.error('Erro ao remover agendamento: ', error);
+    return error;
   }
 }

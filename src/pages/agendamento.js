@@ -1,12 +1,14 @@
-// pages/alunos.js
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/navbar';
 import Sidebar from '../components/sidebar';
 import Box from '@mui/material/Box';
 import { useRouter } from 'next/router';
-import { getAllAlunos } from '@/api/services/alunos';
 import { createAgendamento, deleteAgendamento, getAllAgendamentos, updateAgendamento } from '@/api/services/agendamentos';
-import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
+import { Button, Paper, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
+import { DialogAgendaViva } from '@/components/DialogAviso';
+import { getAllAlunos } from '@/api/services/alunos';
+import { getAllFuncionarios } from '@/api/services/funcionarios';
+import DialogAgendamento from '@/components/DialogAgendamento';
 
 export default function Agendamentos() {
     const router = useRouter();
@@ -15,12 +17,12 @@ export default function Agendamentos() {
         router.push(path);
     };
 
-    // EXEMPLO DE USO DA REQUEST DE AGENDAMENTO:
     const [agendamentos, setAgendamentos] = useState([]); 
+    const [alunos, setAlunos] = useState([]);
+    const [funcionarios, setFuncionarios] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    //exemplo de payload para cadastrar agendamento
     const [payloadData, setPayloadData] = useState({
         id_aluno: '',
         id_funcionario: '',
@@ -28,10 +30,16 @@ export default function Agendamentos() {
         hora_inicio: '',
         hora_fim: '',
     });
+
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
+    const [isDialogDeleteOpen, setIsDialogDeleteOpen] = useState(false);
+    const [agendamentoIdParaDeletar, setAgendamentoIdParaDeletar] = useState(null);
+    const [toastOpen, setToastOpen] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
 
-    //buscar agendamentos
 
     const recuperarAgendamentos = async () => {
         try {
@@ -39,34 +47,99 @@ export default function Agendamentos() {
             const response = await getAllAgendamentos();
             setAgendamentos(response);
         } catch (error) {
-            console.error('Erro ao buscar agendamentos: ', error);
             setError(error);
         } finally {
             setLoading(false);
         }
     };
 
+    const recuperarAlunosEFuncionarios = async () => {
+        try {
+            const [alunosResponse, funcionariosResponse] = await Promise.all([
+                getAllAlunos(),
+                getAllFuncionarios(),
+            ]);
+            setAlunos(alunosResponse);
+            setFuncionarios(funcionariosResponse);
+        } catch (error) {
+            setError(error);
+        }
+    };
+
     const handleSubmit = async () => {
-        console.log('Payload: ', payloadData);
+
+        const horaOrdemCorreta = (horario) => {
+            const [hora, min] = horario.split(':');
+            return `${hora}:${min}:00`;
+        }
+
+        const horaCorretaInicio = () => {
+            const data = payloadData.data;
+            const hora = payloadData.hora_inicio;
+            return `${data}T${horaOrdemCorreta(hora)}`;
+        }
+
+        const horaCorretaFim = () => {
+            const data = payloadData.data;
+            const hora = payloadData.hora_fim;
+            return `${data}T${horaOrdemCorreta(hora)}`;
+        }
+
+        if (!payloadData.data || !payloadData.hora_fim || !payloadData.hora_inicio || !payloadData.id_aluno || !payloadData.id_funcionario) {
+            handleToastOpen("Preencha todos os campos corretamente.");
+            return;
+        }
+
         try {
             setLoading(true);
+
             if (isEditing) {
-                await updateAgendamento(editingId, payloadData);
-                return;
+
+                const formattedData = {
+                    ...payloadData,
+                    hora_inicio: horaCorretaInicio(),
+                    hora_fim: horaCorretaFim()
+                }
+                const response = await updateAgendamento(editingId, formattedData);
+                if (response.response?.data?.error === "O funcionário já possui um agendamento nesse horário") {
+                    handleToastOpen("O funcionário já possui um agendamento nesse horário");
+                    return;
+                }
+                setIsEditing(false);
+                setIsAdding(false);
+                setEditingId(null);
+                setIsDialogOpen(false);
+                recuperarAgendamentos();
+                setPayloadData(
+                    { 
+                        id_aluno: '',
+                        id_funcionario: '',
+                        data: '',
+                        hora_inicio: '',
+                        hora_fim: ''
+                    });
+                handleToastOpen('Agendamento editado com sucesso!');
             } else {
-                await createAgendamento(payloadData);
+                const response = await createAgendamento(payloadData);
+                if (response.response?.data?.error === "O funcionário já possui um agendamento nesse horário") {
+                    handleToastOpen("O funcionário já possui um agendamento nesse horário");
+                    return;
+                }
+                setIsEditing(false);
+                setIsAdding(false);
+                setEditingId(null);
+                setIsDialogOpen(false);
+                recuperarAgendamentos();
+                setPayloadData(
+                    { 
+                        id_aluno: '',
+                        id_funcionario: '',
+                        data: '',
+                        hora_inicio: '',
+                        hora_fim: ''
+                    });
+                handleToastOpen('Agendamento criado com sucesso!');
             }
-            setPayloadData(
-                { 
-                    id_aluno: '',
-                    id_funcionario: '',
-                    data: '',
-                    hora_inicio: '',
-                    hora_fim: ''
-                });
-            setIsEditing(false);
-            setEditingId(null);
-            recuperarAgendamentos();
         } catch (error) {
             console.error('Erro ao salvar agendamento: ', error);
         } finally {
@@ -74,38 +147,93 @@ export default function Agendamentos() {
         }
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = async () => {
+        if (!agendamentoIdParaDeletar) return;
         try {
             setLoading(true);
-            await deleteAgendamento(id);
+            await deleteAgendamento(agendamentoIdParaDeletar);
+            setIsDialogDeleteOpen(false);
             recuperarAgendamentos();
+            handleToastOpen('Agendamento removido com sucesso!');
         } catch (error) {
-            console.error('Erro ao deletar agendamentos: ', error);
+            console.error('Erro ao remover agendamento: ', error);
         } finally {
             setLoading(false);
         }
     };
 
+    const handleOpenDialog = (id) => {
+        setAgendamentoIdParaDeletar(id);
+        setIsDialogDeleteOpen(true);
+    }
+
     const handleEdit = (agendamento) => {
+
+        const formatarHora = (horaISO) => {
+            if (!horaISO) return '';
+            const [data, horaEFuso] = horaISO.split('T');
+            const [horario] = horaEFuso.split('-');
+            const [hora, min] = horario.split(':');
+            return `${hora}:${min}`;
+        }
+
         setPayloadData({
             id_aluno: agendamento.id_aluno,
             id_funcionario: agendamento.id_funcionario,
             data: agendamento.data,
-            hora_inicio: agendamento.hora_inicio.split('T')[1].slice(0, 5),
-            hora_fim: agendamento.hora_fim.split('T')[1].slice(0, 5),
+            hora_inicio: formatarHora(agendamento.hora_inicio),
+            hora_fim: formatarHora(agendamento.hora_fim),
         });
         setIsEditing(true);
         setEditingId(agendamento.id);
+        setIsDialogOpen(true);
     };
 
-    function formatarData(dataISO) {
+    const formatarData = (dataISO) => {
         if (!dataISO) return '';
         const [ano, mes, dia] = dataISO.split('-');
         return `${dia}/${mes}/${ano}`;
     }
 
+    const formatarHora = (horaISO) => {
+        if (!horaISO) return '';
+        const [data, horaEFuso] = horaISO.split('T');
+        const [horario] = horaEFuso.split('-');
+        const [hora, min] = horario.split(':');
+        return `${hora}:${min}`;
+    }
+
+    const handleToastOpen = (message) => {
+        setToastMessage(message);
+        setToastOpen(true);
+    };
+    
+    const handleToastClose = () => {
+        setToastOpen(false);
+    };
+
+    const handleButtonCadastrar = () => {
+        setPayloadData(
+            { 
+                id_aluno: '',
+                id_funcionario: '',
+                data: '',
+                hora_inicio: '',
+                hora_fim: ''
+            });
+        setIsDialogOpen(true);
+        setIsAdding(true);
+    }
+
+    const handleCloseDialog = () => {
+        setIsDialogOpen(false);
+        setIsAdding(false);
+        setIsEditing(false);
+    }
+
     useEffect(() => {
         recuperarAgendamentos();
+        recuperarAlunosEFuncionarios();
     }, []);
 
     return (
@@ -123,11 +251,11 @@ export default function Agendamentos() {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    overflowY: 'auto', // Permite a rolagem vertical
-                    maxHeight: '100vh', // Limita a altura do contêiner à altura da janela
+                    overflowY: 'auto',
+                    maxHeight: '100vh',
                 }}
             >
-                <h2 style={{ fontSize: 20 }}>Gerenciar Agendamentos</h2>
+                <h2 style={{ fontSize: 20 }}>AGENDAMENTOS</h2>
                 <br />
                 {loading ? (
                     <p>Carregando...</p>
@@ -143,67 +271,19 @@ export default function Agendamentos() {
                                 gap: 2,
                                 width: '100%',
                                 maxWidth: 600,
+                                alignItems: 'center',
                                 mb: 3,
                             }}
                         >
-                            <Box display='flex' flexDirection='row' justifyContent='space-between'>
-                                <TextField
-                                    label="Aluno (ID)"
-                                    name="id_aluno"
-                                    type="number"
-                                    value={payloadData.id_aluno}
-                                    onChange={(e) => setPayloadData({ ...payloadData, id_aluno: e.target.value })}
-                                    required
-                                />
-                                <TextField
-                                    label="Funcionário (ID)"
-                                    name="id_funcionario"
-                                    type="number"
-                                    value={payloadData.id_funcionario}
-                                    onChange={(e) => setPayloadData({ ...payloadData, id_funcionario: e.target.value })}
-                                    required
-                                />
-                            </Box>
-                            <Box display='flex' flexDirection='row' justifyContent='space-between'>
-                                <TextField
-                                    label="Data"
-                                    name="data"
-                                    type="date"
-                                    value={payloadData.data}
-                                    onChange={(e) => setPayloadData({ ...payloadData, data: e.target.value })}
-                                    required
-                                />
-                                <TextField
-                                    label="Hora Início"
-                                    name="hora_inicio"
-                                    type="time"
-                                    value={payloadData.hora_inicio}
-                                    onChange={(e) => setPayloadData({ ...payloadData, hora_inicio: e.target.value })}
-                                    required
-                                />
-                                <TextField
-                                    label="Hora Fim"
-                                    name="hora_fim"
-                                    type="time"
-                                    value={payloadData.hora_fim}
-                                    onChange={(e) => setPayloadData({ ...payloadData, hora_fim: e.target.value })}
-                                    required
-                                />
-                            </Box>
-                            <Button variant="contained" onClick={handleSubmit}>
-                                {isEditing ? 'Salvar Alterações' : 'Cadastrar Agendamento'}
+                            <Button 
+                                variant="contained" 
+                                onClick={handleButtonCadastrar} 
+                                sx={{ width: '30%', backgroundColor: 'green', borderRadius: 10, fontSize: 14, gap: 2 }}>
+                                <div style={{ scale: '1.4' }}>
+                                    +
+                                </div>
+                                Agendamento
                             </Button>
-                            {isEditing && (
-                                <Button
-                                    variant="outlined"
-                                    onClick={() => {
-                                        setPayloadData({ id_aluno: '', id_funcionario: '', data: '', hora_inicio: '', hora_fim: '' });
-                                        setIsEditing(false);
-                                    }}
-                                >
-                                    Cancelar
-                                </Button>
-                            )}
                         </Box>
 
                         <TableContainer component={Paper} sx={{ width: '100%', maxWidth: 800 }}>
@@ -221,15 +301,33 @@ export default function Agendamentos() {
                                 <TableBody>
                                     {agendamentos.map((agendamento) => (
                                         <TableRow key={agendamento.id}>
-                                            <TableCell>{agendamento.id_aluno}</TableCell>
-                                            <TableCell>{agendamento.id_funcionario}</TableCell>
-                                            <TableCell>{formatarData(agendamento.data)}</TableCell>
-                                            <TableCell>{agendamento.hora_inicio.split('T')[1].slice(0, 5)}</TableCell>
-                                            <TableCell>{agendamento.hora_fim.split('T')[1].slice(0, 5)}</TableCell>
                                             <TableCell>
-                                                <Button onClick={() => handleEdit(agendamento)}>Editar</Button>
-                                                <Button color="error" onClick={() => handleDelete(agendamento.id)}>
-                                                    Deletar
+                                                {
+                                                    alunos.find(aluno => aluno.id === agendamento.id_aluno)?.nome || 'Carregando...'
+                                                }
+                                            </TableCell>
+                                            <TableCell>
+                                                {
+                                                    funcionarios.find(funcionario => funcionario.id === agendamento.id_funcionario)?.nome || 'Carregando...'
+                                                }
+                                            </TableCell>
+                                            <TableCell>{formatarData(agendamento.data)}</TableCell>
+                                            <TableCell>{formatarHora(agendamento.hora_inicio)}</TableCell>
+                                            <TableCell>{formatarHora(agendamento.hora_fim)}</TableCell>
+                                            <TableCell sx={{ flexDirection: 'row', display: 'flex', gap: 2 }}>
+                                                <Button
+                                                    onClick={() => handleEdit(agendamento)}
+                                                    variant="outlined"
+                                                    sx={{ fontSize: 12, fontWeight: 600 }}
+                                                >
+                                                    Editar
+                                                </Button>
+                                                <Button
+                                                    onClick={() => handleOpenDialog(agendamento.id)}
+                                                    variant="contained"
+                                                    sx={{ fontSize: 12, fontWeight: 600, backgroundColor: 'red' }}
+                                                >
+                                                    Remover
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
@@ -237,6 +335,33 @@ export default function Agendamentos() {
                                 </TableBody>
                             </Table>
                         </TableContainer>
+
+                        <DialogAgendaViva 
+                            isOpen={isDialogDeleteOpen} 
+                            title='Remover' 
+                            description='Tem certeza que deseja remover o agendamento?' 
+                            onClickNao={() => setIsDialogDeleteOpen(false)}
+                            onClickSim={handleDelete} 
+                        />
+
+                        <Snackbar
+                            open={toastOpen}
+                            autoHideDuration={3000}
+                            onClose={handleToastClose}
+                            message={toastMessage}
+                        />
+
+                        {error && <Snackbar open={true} message={`Erro: ${error.message}`} />}
+                        <DialogAgendamento
+                            open={isDialogOpen}
+                            onClose={handleCloseDialog}
+                            onSave={handleSubmit}
+                            payloadData={payloadData}
+                            setPayloadData={setPayloadData}
+                            alunos={alunos}
+                            funcionarios={funcionarios}
+                            isAdding={isAdding}
+                        />
                     </>
                 )}
             </Box>

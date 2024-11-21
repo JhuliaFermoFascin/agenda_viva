@@ -6,8 +6,7 @@ export const getAllEspecialidades = async () => {
       const response = await api.get(endpoints.getAllEspecialidades());
       return response.data;
     } catch (error) {
-      console.error('Erro ao buscar os especialidades:', error);
-      throw error;
+      return error;
     }
 };
 
@@ -16,8 +15,7 @@ export const getEspecialidadeById = async (especialidadeId) => {
       const response = await api.get(endpoints.getEspecialidadeById(especialidadeId));
       return response.data;
     } catch (error) {
-      console.error('Erro ao buscar especialidade: ', error);
-      throw error;
+      return error;
     }
 }
 
@@ -26,7 +24,7 @@ export const createEspecialidade = async (data) => {
     const response = await api.post(endpoints.addEspecialidade(), data);
     return response.data;
   } catch (error) {
-    console.error('Erro ao criar especialidade: ', error);
+    return error;
   }
 }
 
@@ -35,7 +33,7 @@ export const updateEspecialidade = async (especialidadeId, data) => {
     const response = await api.put(endpoints.updateEspecialidade(especialidadeId), data);
     return response.data;
   } catch (error) {
-    console.error('Erro ao atualizar especialidade: ', error);
+    return error;
   }
 }
 
@@ -44,6 +42,6 @@ export const deleteEspecialidade = async (especialidadeId) => {
     const response = await api.delete(endpoints.deleteEspecialidade(especialidadeId));
     return response.data;
   } catch (error) {
-    console.error('Erro ao remover especialidade: ', error);
+    return error;
   }
 }

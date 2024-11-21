@@ -6,8 +6,7 @@ export const getAllUsuarios = async () => {
       const response = await api.get(endpoints.getAllUsuarios());
       return response.data;
     } catch (error) {
-      console.error('Erro ao buscar os usuarios:', error);
-      throw error;
+      return error;
     }
 };
 
@@ -16,8 +15,7 @@ export const getUsuarioById = async (usuarioId) => {
       const response = await api.get(endpoints.getUsuarioById(usuarioId));
       return response.data;
     } catch (error) {
-      console.error('Erro ao buscar usuario: ', error);
-      throw error;
+      return error;
     }
 }
 
@@ -26,7 +24,7 @@ export const createUsuario = async (data) => {
     const response = await api.post(endpoints.addUsuario(), data);
     return response.data;
   } catch (error) {
-    console.error('Erro ao criar usuario: ', error);
+    return error;
   }
 }
 
@@ -35,7 +33,7 @@ export const updateUsuario = async (usuarioId, data) => {
     const response = await api.put(endpoints.updateUsuario(usuarioId), data);
     return response.data;
   } catch (error) {
-    console.error('Erro ao atualizar usuario: ', error);
+    return error;
   }
 }
 
@@ -44,6 +42,6 @@ export const deleteUsuario = async (usuarioId) => {
     const response = await api.delete(endpoints.deleteUsuario(usuarioId));
     return response.data;
   } catch (error) {
-    console.error('Erro ao remover usuario: ', error);
+    return error;
   }
 }
