@@ -1,7 +1,7 @@
 import React from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, Autocomplete } from '@mui/material';
 
-export default function DialogAgendamento({ open, onClose, onSave, payloadData, setPayloadData, alunos, funcionarios, isAdding }) {
+const DialogAgendamento = ({ open, onClose, onSave, payloadData, setPayloadData, alunos, funcionarios, isAdding }) => {
     return (
         <Dialog open={open} onClose={onClose} fullWidth>
             <DialogTitle>{isAdding ? 'Cadastrar Agendamento' : 'Editar Agendamento'}</DialogTitle>
@@ -74,3 +74,5 @@ export default function DialogAgendamento({ open, onClose, onSave, payloadData, 
         </Dialog>
     );
 }
+
+export default DialogAgendamento;

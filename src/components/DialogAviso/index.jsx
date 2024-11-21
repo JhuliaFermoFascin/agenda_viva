@@ -1,7 +1,7 @@
 import React from "react"
 import { Dialog, Button, Divider } from "@mui/material"
 
-export const DialogAviso = ({ description, title, onClickSim, onClickNao, isOpen, style }) => {
+const DialogAviso = ({ description, title, onClickSim, onClickNao, isOpen, style }) => {
     return (
         <Dialog open={isOpen}>
             <div style={{ padding: 20 }}>
@@ -22,3 +22,5 @@ export const DialogAviso = ({ description, title, onClickSim, onClickNao, isOpen
         </Dialog>
     )
 }
+
+export default DialogAviso;

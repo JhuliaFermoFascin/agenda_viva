@@ -7,6 +7,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Collapse from '@mui/material/Collapse';
 import Toolbar from '@mui/material/Toolbar';
+import { useGlobalState } from '../contexts/globalState'
 
 import HomeIcon from '@mui/icons-material/Home';
 import EventNoteIcon from '@mui/icons-material/EventNote';
@@ -17,6 +18,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const Sidebar = ({ handleNavigation }) => {
     const [cadastrosOpen, setCadastrosOpen] = React.useState(false);
+    const { isNavBarOpen } = useGlobalState(); 
+
 
     const handleCadastrosClick = () => {
         setCadastrosOpen(!cadastrosOpen);
@@ -27,13 +30,13 @@ const Sidebar = ({ handleNavigation }) => {
             id="sidebar"
             variant="permanent"
             sx={{
-                width: 240,
+                width: isNavBarOpen ? 240 : 0,
                 flexShrink: 0,
                 '& .MuiDrawer-paper': {
-                    width: 240,
+                    width: isNavBarOpen ? 240 : 0,
                     boxSizing: 'border-box',
                     backgroundColor: '#e0e0e0',
-                    transition: 'width 0.3s',
+                    transition: 'width 0.3s ease',
                     overflowX: 'hidden',
                     mt: 8,
                 },

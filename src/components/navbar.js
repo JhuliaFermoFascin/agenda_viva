@@ -8,13 +8,17 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Avatar from '@mui/material/Avatar';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Box from '@mui/material/Box';
+import { useGlobalState } from '../contexts/globalState'
 
-const Navbar = ({ handleDrawerToggle }) => {
+const Navbar = () => {
+    
+    const { trocaEstado } = useGlobalState();
+
     return (
         <AppBar position="fixed" sx={{ backgroundColor: '#8ECAE6', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
             <Toolbar>
                 {/* Ícone de Menu na Navbar */}
-                <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleDrawerToggle} sx={{ mr: 2 }}>
+                <IconButton edge="start" color="inherit" aria-label="menu" onClick={trocaEstado} sx={{ mr: 2 }}>
                     <MenuIcon />
                 </IconButton>
 

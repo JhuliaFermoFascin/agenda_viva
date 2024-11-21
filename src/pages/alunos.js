@@ -11,10 +11,10 @@ export default function Alunos() {
     const handleNavigation = (path) => {
         router.push(path);
     };
-
+    
     return (
         <>
-            <Navbar />
+            <Navbar/>
             <Sidebar handleNavigation={handleNavigation} />
             <Box
                 component="main"

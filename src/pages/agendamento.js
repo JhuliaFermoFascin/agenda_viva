@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import { useRouter } from 'next/router';
 import { createAgendamento, deleteAgendamento, getAllAgendamentos, updateAgendamento } from '@/api/services/agendamentos';
 import { Button, Paper, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
-import { DialogAgendaViva } from '@/components/DialogAviso';
+import DialogAgendaViva from '@/components/DialogAviso';
 import { getAllAlunos } from '@/api/services/alunos';
 import { getAllFuncionarios } from '@/api/services/funcionarios';
 import DialogAgendamento from '@/components/DialogAgendamento';
@@ -45,8 +45,14 @@ export default function Agendamentos() {
         try {
             setLoading(true);
             const response = await getAllAgendamentos();
-            setAgendamentos(response);
+            
+            if (Array.isArray(response)) {
+                setAgendamentos(response);
+            } else {
+                throw new Error('A resposta não é um array válido');
+            }
         } catch (error) {
+            console.log('Erro ao recuperar agendamentos: ', error);
             setError(error);
         } finally {
             setLoading(false);
@@ -59,10 +65,17 @@ export default function Agendamentos() {
                 getAllAlunos(),
                 getAllFuncionarios(),
             ]);
-            setAlunos(alunosResponse);
-            setFuncionarios(funcionariosResponse);
+
+            if (alunosResponse && funcionariosResponse) {
+                setAlunos(alunosResponse);
+                setFuncionarios(funcionariosResponse);
+            } else {
+                throw new Error("Dados inválidos recebidos");
+            }
         } catch (error) {
-            setError(error);
+            setError(error.message || "Erro desconhecido");
+        } finally {
+            setLoading(false);
         }
     };
 

@@ -1,9 +1,13 @@
 import "@/styles/globals.css";
-import Navbar from '../components/navbar.js';
+import { GlobalStateProvider } from "@/contexts/globalState.js";
 
 
 export default function App({ Component, pageProps }) {
-  return <Component {...pageProps} />;
+  return (
+    <GlobalStateProvider>
+      <Component {...pageProps} />
+    </GlobalStateProvider>
+  );
 }
 
 
