@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import InputMask from 'react-input-mask';
+import ReactInputMask from 'react-input-mask';
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Male';
 
@@ -212,7 +212,7 @@ const StudentTable = () => {
               value={currentAluno?.responsavel || ''}
               onChange={(e) => setCurrentAluno({ ...currentAluno, responsavel: e.target.value })}
             />
-            <InputMask
+            <ReactInputMask
               mask="(99) 99999-9999"
               value={currentAluno?.contato || ''}
               onChange={(e) => setCurrentAluno({ ...currentAluno, contato: e.target.value })}
@@ -227,8 +227,8 @@ const StudentTable = () => {
                   fullWidth
                 />
               )}
-            </InputMask>
-            <InputMask
+            </ReactInputMask>
+            <ReactInputMask
               mask="99/99/9999"
               value={currentAluno?.dataNascimento || ''}
               onChange={(e) => setCurrentAluno({ ...currentAluno, dataNascimento: e.target.value })}
@@ -243,8 +243,8 @@ const StudentTable = () => {
                   fullWidth
                 />
               )}
-            </InputMask>
-            <InputMask
+            </ReactInputMask>
+            <ReactInputMask
               mask="999.999.999-99"
               value={currentAluno?.cpf || ''}
               onChange={(e) => setCurrentAluno({ ...currentAluno, cpf: e.target.value })}
@@ -259,7 +259,7 @@ const StudentTable = () => {
                   fullWidth
                 />
               )}
-            </InputMask>
+            </ReactInputMask>
             <FormControl component="fieldset" required error={!!errors.sexo}>
               <FormLabel component="legend">Sexo</FormLabel>
               <RadioGroup

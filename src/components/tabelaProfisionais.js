@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { getAllFuncionarios, updateFuncionario, createFuncionario, deleteFuncionario } from '@/api/services/funcionarios';
+import { getAllEspecialidades } from '@/api/services/especialidades';
 import {
   Button,
   Dialog,
@@ -8,6 +10,7 @@ import {
   DialogTitle,
   TextField,
   IconButton,
+  Autocomplete,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -15,21 +18,36 @@ import EditIcon from '@mui/icons-material/Edit';
 const HealthProfessionalTable = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [currentProfessional, setCurrentProfessional] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [error, setError] = useState(null);
 
-  const [professionals, setProfessionals] = useState([
-    { id: 1, nome: 'Dr. João Silva', especialidade: 'Cardiologia' },
-    { id: 2, nome: 'Dra. Maria Oliveira', especialidade: 'Pediatria' },
-  ]);
+  const [professionals, setProfessionals] = useState([]);
+  const [especialidades, setEspecialidades] = useState([]);
 
   const handleOpenDialog = (professional = null) => {
-    setCurrentProfessional(professional || { nome: '', especialidade: '' });
+    if (professional) {
+      setCurrentProfessional(professional);
+      setPayloadData({
+        nome: professional.nome,
+        id_especialidade: professional.id_especialidade || '',
+      });
+    } else {
+      setCurrentProfessional({ nome: '', especialidade: '' });
+      setPayloadData({ nome: '', id_especialidade: '' });
+    }
     setEditMode(!!professional);
-    setErrors({});
     setDialogOpen(true);
   };
+
+  const [payloadData, setPayloadData] = useState({
+    nome: '',
+    id_especialidade: '',
+  });
+
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
@@ -57,13 +75,35 @@ const HealthProfessionalTable = () => {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSave = () => {
-    if (!validate()) return;
+  const handleSave = async () => {
+    const updatedProfessional = {
+      id: currentProfessional?.id || null, // Garantir que o ID está presente no modo edição
+      nome: payloadData.nome,
+      id_especialidade: payloadData.id_especialidade,
+    };
+  
     if (editMode) {
-      setProfessionals(professionals.map((p) => (p.id === currentProfessional.id ? currentProfessional : p)));
+      // Atualizar um profissional existente
+      try {
+        await updateFuncionario(updatedProfessional); // Atualizar na API
+        setProfessionals(
+          professionals.map((p) =>
+            p.id === updatedProfessional.id ? updatedProfessional : p
+          )
+        );
+      } catch (error) {
+        console.error('Erro ao atualizar profissional:', error);
+      }
     } else {
-      setProfessionals([...professionals, { ...currentProfessional, id: professionals.length + 1 }]);
+      // Criar um novo profissional
+      try {
+        const response = await createFuncionario(updatedProfessional); // Criar na API
+        setProfessionals([...professionals, { ...response }]);
+      } catch (error) {
+        console.error('Erro ao criar profissional:', error);
+      }
     }
+  
     handleCloseDialog();
   };
 
@@ -72,9 +112,45 @@ const HealthProfessionalTable = () => {
     handleCloseDeleteDialog();
   };
 
+  const recuperarProfissionais = async () => {
+    try {
+        setLoading(true);
+        const response = await getAllFuncionarios();
+        
+        if (Array.isArray(response)) {
+          const updatedProfessionals = response.map((professional) => {
+            const especialidade = especialidades.find((e) => e.id === professional.id_especialidade);
+            return {
+              ...professional,
+              nomeEspecialidade: especialidade ? especialidade.nome : 'Não definida',
+            };
+          });
+          setProfessionals(updatedProfessionals);
+        } else {
+            throw new Error('A resposta não é um array válido');
+        }
+    } catch (error) {
+        console.log('Erro ao recuperar agendamentos: ', error);
+        setError(error);
+    } finally {
+        setLoading(false);
+    }
+};
+
+const recuperarEspecialidades = async () => {
+  try {
+      const response = await getAllEspecialidades();
+      setEspecialidades(response);
+  } catch (error) {
+      setError(error.message || "Erro desconhecido");
+  } finally {
+      setLoading(false);
+  }
+};
+
   const columns = [
     { field: 'nome', headerName: 'Nome', width: 200 },
-    { field: 'especialidade', headerName: 'Especialidade', width: 200 },
+    { field: 'nomeEspecialidade', headerName: 'Especialidade', width: 200 },
     {
       field: 'acoes',
       headerName: 'Ações',
@@ -92,6 +168,11 @@ const HealthProfessionalTable = () => {
     },
   ];
 
+  useEffect(() => {
+    recuperarProfissionais();
+    recuperarEspecialidades();
+  }, []);
+
   return (
     <div style={{ height: 400, width: '100%' }}>
       <Button variant="contained" color="primary" onClick={() => handleOpenDialog()} style={{ marginBottom: 10 }}>
@@ -102,27 +183,32 @@ const HealthProfessionalTable = () => {
       {/* Dialog de Cadastro/Edição */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>{editMode ? 'Editar Profissional' : 'Adicionar Profissional'}</DialogTitle>
-        <DialogContent>
-          <TextField
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, margin: 20 }}>
+        <TextField
             error={!!errors.nome}
             helperText={errors.nome}
             autoFocus
             margin="dense"
             label="Nome"
             fullWidth
-            value={currentProfessional?.nome || ''}
-            onChange={(e) => setCurrentProfessional({ ...currentProfessional, nome: e.target.value })}
+            value={payloadData.nome}
+            onChange={(e) =>
+              setPayloadData({ ...payloadData, nome: e.target.value })
+            }
           />
-          <TextField
-            error={!!errors.especialidade}
-            helperText={errors.especialidade}
-            margin="dense"
-            label="Especialidade"
-            fullWidth
-            value={currentProfessional?.especialidade || ''}
-            onChange={(e) => setCurrentProfessional({ ...currentProfessional, especialidade: e.target.value })}
+          <Autocomplete
+            disablePortal
+            id="especialidade"
+            options={especialidades}
+            getOptionLabel={(option) => option.nome}
+            value={especialidades.find((especialidade) => especialidade.id === payloadData.id_especialidade) || null}
+            onChange={(event, newValue) =>
+              setPayloadData({ ...payloadData, id_especialidade: newValue ? newValue.id : '' })
+            }
+            renderInput={(params) => <TextField {...params} label="Especialidade" required fullWidth />}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
           />
-        </DialogContent>
+        </div>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancelar</Button>
           <Button onClick={handleSave} color="primary">
