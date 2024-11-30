@@ -1,5 +1,7 @@
 import React from 'react';
 import { GlobalStateProvider } from '../contexts/globalState'; 
+import '../styles/globals.css';
+
 
 function MyApp({ Component, pageProps }) {
   return (

@@ -29,7 +29,7 @@ export default function Alunos() {
           transition: 'margin-left 0.3s',
         }}
       >
-        <h1>Cadastro de Profissionais</h1>
+        
         <Box
           sx={{
             display: 'flex',

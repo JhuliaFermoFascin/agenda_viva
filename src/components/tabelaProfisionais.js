@@ -1,233 +1,279 @@
 import React, { useEffect, useState } from 'react';
-import { DataGrid, GridToolbar } from '@mui/x-data-grid';
-import { getAllFuncionarios, updateFuncionario, createFuncionario, deleteFuncionario } from '@/api/services/funcionarios';
-import { getAllEspecialidades } from '@/api/services/especialidades';
 import {
   Button,
   Dialog,
   DialogActions,
-  DialogContent,
   DialogTitle,
   TextField,
   IconButton,
+  Snackbar,
+  Box,
+  Paper,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
   Autocomplete,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
+import {
+  getAllFuncionarios,
+  updateFuncionario,
+  createFuncionario,
+  deleteFuncionario,
+} from '@/api/services/funcionarios';
+import { getAllEspecialidades } from '@/api/services/especialidades';
+
 const HealthProfessionalTable = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [currentProfessional, setCurrentProfessional] = useState(null);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [error, setError] = useState(null);
-
   const [professionals, setProfessionals] = useState([]);
   const [especialidades, setEspecialidades] = useState([]);
+  const [payloadData, setPayloadData] = useState({ nome: '', id_especialidade: '' });
+
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  const handleToastOpen = (message) => {
+    setToastMessage(message);
+    setToastOpen(true);
+  };
+
+  const handleToastClose = () => {
+    setToastOpen(false);
+  };
+
+  const recuperarEspecialidades = async () => {
+    try {
+      const response = await getAllEspecialidades();
+      if (Array.isArray(response)) {
+        setEspecialidades(response);
+      } else {
+        console.error('Resposta inválida ao buscar especialidades:', response);
+      }
+    } catch (error) {
+      console.error('Erro ao recuperar especialidades:', error);
+    }
+  };
+
+  const recuperarFuncionarios = async () => {
+    try {
+      setLoading(true);
+      const funcionariosResponse = await getAllFuncionarios();
+      const especialidadesResponse = await getAllEspecialidades();
+
+      if (Array.isArray(funcionariosResponse) && Array.isArray(especialidadesResponse)) {
+        const updatedProfessionals = funcionariosResponse.map((funcionario) => {
+          const especialidade = especialidadesResponse.find(
+            (e) => String(e.id) === String(funcionario.id_especialidade)
+          );
+          return {
+            ...funcionario,
+            nome: funcionario.nome.trim(),
+            nomeEspecialidade: especialidade ? especialidade.nome : 'Não definida',
+          };
+        });
+
+        setProfessionals(updatedProfessionals);
+      }
+    } catch (error) {
+      console.error('Erro ao recuperar funcionários:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleOpenDialog = (professional = null) => {
     if (professional) {
+      setEditMode(true);
       setCurrentProfessional(professional);
       setPayloadData({
-        nome: professional.nome,
+        nome: professional.nome.trim(),
         id_especialidade: professional.id_especialidade || '',
       });
     } else {
-      setCurrentProfessional({ nome: '', especialidade: '' });
+      setEditMode(false);
+      setCurrentProfessional(null);
       setPayloadData({ nome: '', id_especialidade: '' });
     }
-    setEditMode(!!professional);
     setDialogOpen(true);
   };
-
-  const [payloadData, setPayloadData] = useState({
-    nome: '',
-    id_especialidade: '',
-  });
-
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setCurrentProfessional(null);
-  };
-
-  const handleOpenDeleteDialog = (professional) => {
-    setCurrentProfessional(professional);
-    setDeleteOpen(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setDeleteOpen(false);
-    setCurrentProfessional(null);
-  };
-
-  const validate = () => {
-    let tempErrors = {};
-    if (!currentProfessional.nome) tempErrors.nome = 'Nome é obrigatório';
-    else if (/\d/.test(currentProfessional.nome)) tempErrors.nome = 'Nome não pode conter números';
-
-    if (!currentProfessional.especialidade) tempErrors.especialidade = 'Especialidade é obrigatória';
-
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
+    setPayloadData({ nome: '', id_especialidade: '' });
   };
 
   const handleSave = async () => {
-    const updatedProfessional = {
-      id: currentProfessional?.id || null, // Garantir que o ID está presente no modo edição
-      nome: payloadData.nome,
-      id_especialidade: payloadData.id_especialidade,
-    };
-  
-    if (editMode) {
-      // Atualizar um profissional existente
-      try {
-        await updateFuncionario(updatedProfessional); // Atualizar na API
-        setProfessionals(
-          professionals.map((p) =>
-            p.id === updatedProfessional.id ? updatedProfessional : p
+    try {
+      if (!payloadData.nome || !payloadData.id_especialidade) {
+        handleToastOpen('Preencha todos os campos obrigatórios.');
+        return;
+      }
+
+      const updatedProfessional = {
+        id: currentProfessional?.id || null,
+        nome: payloadData.nome.trim(),
+        id_especialidade: payloadData.id_especialidade,
+      };
+
+      if (editMode) {
+        const updated = await updateFuncionario(updatedProfessional.id, updatedProfessional);
+        setProfessionals((prev) =>
+          prev.map((prof) =>
+            prof.id === updated.id
+              ? {
+                  ...updated,
+                  nomeEspecialidade:
+                    especialidades.find((e) => e.id === updated.id_especialidade)?.nome || 'Não definida',
+                }
+              : prof
           )
         );
-      } catch (error) {
-        console.error('Erro ao atualizar profissional:', error);
+        handleToastOpen('Profissional editado com sucesso!');
+      } else {
+        const created = await createFuncionario(updatedProfessional);
+        setProfessionals((prev) => [
+          ...prev,
+          {
+            ...created,
+            nomeEspecialidade:
+              especialidades.find((e) => e.id === created.id_especialidade)?.nome || 'Não definida',
+          },
+        ]);
+        handleToastOpen('Profissional adicionado com sucesso!');
       }
-    } else {
-      // Criar um novo profissional
-      try {
-        const response = await createFuncionario(updatedProfessional); // Criar na API
-        setProfessionals([...professionals, { ...response }]);
-      } catch (error) {
-        console.error('Erro ao criar profissional:', error);
-      }
-    }
-  
-    handleCloseDialog();
-  };
 
-  const handleDelete = () => {
-    setProfessionals(professionals.filter((p) => p.id !== currentProfessional.id));
-    handleCloseDeleteDialog();
-  };
-
-  const recuperarProfissionais = async () => {
-    try {
-        setLoading(true);
-        const response = await getAllFuncionarios();
-        
-        if (Array.isArray(response)) {
-          const updatedProfessionals = response.map((professional) => {
-            const especialidade = especialidades.find((e) => e.id === professional.id_especialidade);
-            return {
-              ...professional,
-              nomeEspecialidade: especialidade ? especialidade.nome : 'Não definida',
-            };
-          });
-          setProfessionals(updatedProfessionals);
-        } else {
-            throw new Error('A resposta não é um array válido');
-        }
+      handleCloseDialog();
     } catch (error) {
-        console.log('Erro ao recuperar agendamentos: ', error);
-        setError(error);
-    } finally {
-        setLoading(false);
+      console.error('Erro ao salvar profissional:', error);
+      handleToastOpen('Erro ao salvar profissional.');
     }
-};
+  };
 
-const recuperarEspecialidades = async () => {
-  try {
-      const response = await getAllEspecialidades();
-      setEspecialidades(response);
-  } catch (error) {
-      setError(error.message || "Erro desconhecido");
-  } finally {
-      setLoading(false);
-  }
-};
-
-  const columns = [
-    { field: 'nome', headerName: 'Nome', width: 200 },
-    { field: 'nomeEspecialidade', headerName: 'Especialidade', width: 200 },
-    {
-      field: 'acoes',
-      headerName: 'Ações',
-      width: 150,
-      renderCell: (params) => (
-        <>
-          <IconButton color="primary" onClick={() => handleOpenDialog(params.row)}>
-            <EditIcon />
-          </IconButton>
-          <IconButton color="error" onClick={() => handleOpenDeleteDialog(params.row)}>
-            <DeleteIcon />
-          </IconButton>
-        </>
-      ),
-    },
-  ];
+  const handleDelete = async (id) => {
+    try {
+      await deleteFuncionario(id);
+      await recuperarFuncionarios();
+      handleToastOpen('Profissional excluído com sucesso!');
+    } catch (error) {
+      console.error('Erro ao excluir profissional:', error);
+      handleToastOpen('Erro ao excluir profissional.');
+    }
+  };
 
   useEffect(() => {
-    recuperarProfissionais();
-    recuperarEspecialidades();
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        await recuperarEspecialidades();
+        await recuperarFuncionarios();
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (
-    <div style={{ height: 400, width: '100%' }}>
-      <Button variant="contained" color="primary" onClick={() => handleOpenDialog()} style={{ marginBottom: 10 }}>
-        Adicionar Profissional de Saúde
+    <Box sx={{ p: 4, maxWidth: 800, margin: '0 auto', textAlign: 'center' }} translate="no">
+      <h2
+        style={{
+          marginBottom: '20px',
+          fontSize: '28px', // Aumenta o tamanho da fonte
+        }}
+      >
+        Cadastro de Profissionais
+      </h2>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => handleOpenDialog()}
+        sx={{ marginBottom: 3, backgroundColor: 'green', width: '100%' }}
+      >
+        Adicionar Profissional
       </Button>
-      <DataGrid rows={professionals} columns={columns} pageSize={5} components={{ Toolbar: GridToolbar }} />
 
-      {/* Dialog de Cadastro/Edição */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Nome</TableCell>
+              <TableCell>Especialidade</TableCell>
+              <TableCell>Ações</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {professionals.map((prof) => (
+              <TableRow key={prof.id}>
+                <TableCell>{prof.nome}</TableCell>
+                <TableCell>{prof.nomeEspecialidade}</TableCell>
+                <TableCell>
+                  <IconButton color="primary" onClick={() => handleOpenDialog(prof)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton color="error" onClick={() => handleDelete(prof.id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>{editMode ? 'Editar Profissional' : 'Adicionar Profissional'}</DialogTitle>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, margin: 20 }}>
-        <TextField
-            error={!!errors.nome}
-            helperText={errors.nome}
-            autoFocus
-            margin="dense"
+        <Box sx={{ p: 3 }}>
+          <TextField
             label="Nome"
             fullWidth
             value={payloadData.nome}
-            onChange={(e) =>
-              setPayloadData({ ...payloadData, nome: e.target.value })
-            }
+            onChange={(e) => setPayloadData({ ...payloadData, nome: e.target.value })}
+            margin="normal"
+            autoCorrect="off"
+            spellCheck="false"
+            inputProps={{ autoComplete: 'off' }}
           />
           <Autocomplete
-            disablePortal
-            id="especialidade"
             options={especialidades}
             getOptionLabel={(option) => option.nome}
-            value={especialidades.find((especialidade) => especialidade.id === payloadData.id_especialidade) || null}
-            onChange={(event, newValue) =>
-              setPayloadData({ ...payloadData, id_especialidade: newValue ? newValue.id : '' })
+            value={
+              especialidades.find((e) => String(e.id) === String(payloadData.id_especialidade)) || null
             }
-            renderInput={(params) => <TextField {...params} label="Especialidade" required fullWidth />}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
+            onChange={(event, newValue) =>
+              setPayloadData({ ...payloadData, id_especialidade: newValue?.id || '' })
+            }
+            renderInput={(params) => <TextField {...params} label="Especialidade" />}
           />
-        </div>
+        </Box>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancelar</Button>
-          <Button onClick={handleSave} color="primary">
-            Salvar
+          <Button onClick={handleCloseDialog} color="secondary">
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} variant="contained" color="primary">
+            {editMode ? 'Salvar Alterações' : 'Adicionar'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Dialog de Exclusão */}
-      <Dialog open={deleteOpen} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>Tem certeza que deseja excluir?</DialogTitle>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>Cancelar</Button>
-          <Button onClick={handleDelete} color="error">
-            Excluir
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3000}
+        onClose={handleToastClose}
+        message={toastMessage}
+      />
+    </Box>
   );
 };
 
