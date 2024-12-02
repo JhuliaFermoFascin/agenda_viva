@@ -45,7 +45,7 @@ const Sidebar = ({ handleNavigation }) => {
             <Toolbar /> {/* Espaço superior para não ser encoberta pela navbar */}
             <List>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={() => handleNavigation('/')}> {/* Navegação para a página inicial */}
+                    <ListItemButton onClick={() => handleNavigation('/home')}> {/* Navegação para a página inicial */}
                         <ListItemIcon>
                             <HomeIcon />
                         </ListItemIcon>
@@ -82,13 +82,20 @@ const Sidebar = ({ handleNavigation }) => {
                                 <ListItemText primary="Alunos" />
                             </ListItemButton>
                         </ListItem>
-
                         <ListItem disablePadding>
                             <ListItemButton onClick={() => handleNavigation('/profissionais')}> {/* Navegação para profissionais */}
                                 <ListItemIcon>
                                     <GroupIcon />
                                 </ListItemIcon>
                                 <ListItemText primary="Profissionais" />
+                            </ListItemButton>
+                        </ListItem>
+                        <ListItem disablePadding>
+                            <ListItemButton onClick={() => handleNavigation('/especialidades')}> {/* Navegação para profissionais */}
+                                <ListItemIcon>
+                                    <GroupIcon />
+                                </ListItemIcon>
+                                <ListItemText primary="Especialidade" />
                             </ListItemButton>
                         </ListItem>
                     </List>
