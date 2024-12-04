@@ -1,8 +1,7 @@
 import React from 'react';
 import Navbar from '../components/navbar';
 import Sidebar from '../components/sidebar';
-import Box from '@mui/material/Box';
-import HealthProfessionalTable from '../components/tabelaProfisionais'; // Corrigido para o nome correto do componente
+import HealthProfessionalTable from '../components/tabelaProfisionais';
 import { useRouter } from 'next/router';
 
 export default function Alunos() {
@@ -16,33 +15,13 @@ export default function Alunos() {
     <>
       <Navbar />
       <Sidebar handleNavigation={handleNavigation} />
-      <Box
-        component="main"
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center', // Centraliza horizontalmente
-          justifyContent: 'center', // Centraliza verticalmente
-          minHeight: '100vh', // Ocupa 100% da altura da tela
-          p: 3,
-          ml: 40, // Ajuste para acomodar a largura da sidebar estendida
-          transition: 'margin-left 0.3s',
-        }}
-      >
-        
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center', // Centraliza horizontalmente o contêiner da tabela
-            width: '100%', // Ajusta para ocupar 100% da largura disponível após o ajuste da sidebar
-            p: 2, // Padding para melhorar o visual
-          }}
-        >
-          <Box sx={{ width: '80%', maxWidth: 1200 }}> {/* Limita a largura máxima da tabela para 1200px */}
+      <main className="flex flex-col items-center justify-center min-h-screen p-3 ml-40 transition-all duration-300">
+        <div className="flex justify-center w-full p-2">
+          <div className="w-4/5 max-w-screen-lg">
             <HealthProfessionalTable />
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </main>
     </>
   );
 }

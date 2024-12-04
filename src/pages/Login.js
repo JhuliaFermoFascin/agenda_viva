@@ -41,6 +41,10 @@ export default function Login() {
     }
   };
 
+  const handleForgotPassword = () => {
+    router.push('/esqueceuSenha'); 
+  };
+
   return (
     <>
       <Head>
@@ -100,31 +104,22 @@ export default function Login() {
                   </label>
                 </div>
                 <div className="text-right mt-1">
-                <a
-                    href="#"
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
                     className="text-sm text-[#8ECAE6] hover:underline"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      router.push('/esqueceu_senha');
-                    }}
                   >
-                  Esqueci minha senha
-                </a>
+                    Esqueci minha senha
+                  </button>
                 </div>
               </div>
               <div className="flex flex-col gap-4 mt-10">
                 <button
                   type="button"
                   onClick={handleLogin}
-                  className="w-full bg-[#FFB703] text-white py-2 rounded-lg hover:bg-[#FAA419] transition"
+                  className="w-full bg-[#FFB703] text-white py-2 rounded-lg hover:bg-[#6FB3CF] transition"
                 >
                   Entrar
-                </button>
-                <button
-                  type="button"
-                  className="w-full bg-[#8ECAE6] text-white py-2 rounded-lg hover:bg-[#6FB3CF] transition"
-                >
-                  Cadastre-se
                 </button>
               </div>
             </form>

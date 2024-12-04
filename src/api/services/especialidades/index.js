@@ -3,7 +3,7 @@ import endpoints from "@/api/endPoints";
 
 export const getAllEspecialidades = async () => {
     try {
-      const response = await api.get(endpoints.getAllEspecialidades());
+      const response = await api.get(endpoints.getAll());
       return response.data;
     } catch (error) {
       return error;

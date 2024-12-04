@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Typography, Button } from '@mui/material';
 import { useRouter } from 'next/router';
 
 const ForgotPasswordPage = () => {
@@ -10,24 +9,23 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 4, minHeight: '100vh' }}>
-      <Typography variant="h5" sx={{ marginBottom: 2 }}>
-        Esqueceu sua senha?
-      </Typography>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
+      <h1 className="text-2xl font-semibold mb-4">Esqueceu sua senha?</h1>
 
-      <Box sx={{ backgroundColor: 'white', padding: 4, borderRadius: 2, boxShadow: 1, maxWidth: '400px', textAlign: 'center' }}>
-        <Typography variant="body1" sx={{ marginBottom: 2 }}>
+      <div className="bg-white p-6 rounded-lg shadow-md max-w-md text-center">
+        <p className="text-gray-700 mb-4">
           Caso tenha esquecido sua senha, por favor, entre em contato com nosso suporte no email:
-        </Typography>
-        <Typography variant="h6" color="primary">
-          suporte@exemplo.com
-        </Typography>
-      </Box>
+        </p>
+        <h2 className="text-lg text-blue-500 font-bold">suporte@exemplo.com</h2>
+      </div>
 
-      <Button onClick={handleGoBack} variant="outlined" sx={{ marginTop: 4 }}>
+      <button
+        onClick={handleGoBack}
+        className="mt-6 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200"
+      >
         Voltar para o Login
-      </Button>
-    </Box>
+      </button>
+    </div>
   );
 };
 

@@ -190,7 +190,7 @@ const HealthProfessionalTable = () => {
       <h2
         style={{
           marginBottom: '20px',
-          fontSize: '28px', // Aumenta o tamanho da fonte
+          fontSize: '28px',
         }}
       >
         Cadastro de Profissionais

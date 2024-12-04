@@ -1,4 +1,3 @@
-// components/tabelaAlunos.js
 import React, { useState } from 'react';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import {
@@ -186,8 +185,6 @@ const StudentTable = () => {
               `${visibleCount.toLocaleString()} de ${totalCount.toLocaleString()}`,
           }}
         />
-
-        {/* Dialog de Cadastro/Edição */}
         <Dialog open={dialogOpen} onClose={handleCloseDialog}>
           <DialogTitle>{editMode ? 'Editar Aluno' : 'Adicionar Aluno'}</DialogTitle>
           <DialogContent>
@@ -279,8 +276,6 @@ const StudentTable = () => {
             </Button>
           </DialogActions>
         </Dialog>
-
-        {/* Dialog de Exclusão */}
         <Dialog open={deleteOpen} onClose={handleCloseDeleteDialog}>
           <DialogTitle>Tem certeza que deseja excluir?</DialogTitle>
           <DialogActions>
