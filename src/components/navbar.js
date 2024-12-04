@@ -4,18 +4,17 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import MenuIcon from '@mui/icons-material/Menu';
-import Avatar from '@mui/material/Avatar';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Box from '@mui/material/Box';
 import { useRouter } from 'next/router';
 import { useGlobalState } from '../contexts/globalState';
+import IconAvatar from "../icon/icon-avatar.svg";
 
 const Navbar = () => {
     const router = useRouter();
     const { trocaEstado } = useGlobalState();
 
     const handleLogoClick = () => {
-        // Redireciona para a página de home
         router.push('/home');
     };
 
@@ -54,8 +53,8 @@ const Navbar = () => {
                             Online
                         </Typography>
                     </Box>
-                    <Avatar alt="User Avatar" src="/avatar.png" />
-                    <IconButton edge="end" color="inherit" onClick={handleLogout}>
+                    <IconAvatar />
+                    <IconButton color="inherit" onClick={handleLogout}>
                         <LogoutIcon />
                     </IconButton>
                 </Box>

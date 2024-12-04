@@ -7,7 +7,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Collapse from '@mui/material/Collapse';
 import Toolbar from '@mui/material/Toolbar';
-import { useGlobalState } from '../contexts/globalState'
+import { useGlobalState } from '../contexts/globalState';
 
 import HomeIcon from '@mui/icons-material/Home';
 import EventNoteIcon from '@mui/icons-material/EventNote';
@@ -18,8 +18,15 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const Sidebar = ({ handleNavigation }) => {
     const [cadastrosOpen, setCadastrosOpen] = React.useState(false);
-    const { isNavBarOpen } = useGlobalState(); 
+    const { isNavBarOpen } = useGlobalState();
 
+    const handleSafeNavigation = (path) => {
+        if (typeof handleNavigation === 'function') {
+            handleNavigation(path);
+        } else {
+            console.error(`handleNavigation is not a function. Attempted to navigate to: ${path}`);
+        }
+    };
 
     const handleCadastrosClick = () => {
         setCadastrosOpen(!cadastrosOpen);
@@ -42,10 +49,10 @@ const Sidebar = ({ handleNavigation }) => {
                 },
             }}
         >
-            <Toolbar /> {/* Espaço superior para não ser encoberta pela navbar */}
+            <Toolbar /> 
             <List>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={() => handleNavigation('/')}> {/* Navegação para a página inicial */}
+                    <ListItemButton onClick={() => handleSafeNavigation('/home')}> 
                         <ListItemIcon>
                             <HomeIcon />
                         </ListItemIcon>
@@ -54,7 +61,7 @@ const Sidebar = ({ handleNavigation }) => {
                 </ListItem>
 
                 <ListItem disablePadding>
-                    <ListItemButton onClick={() => handleNavigation('/agendamento')}> {/* Navegação para agendamentos */}
+                    <ListItemButton onClick={() => handleSafeNavigation('/agendamento')}> 
                         <ListItemIcon>
                             <EventNoteIcon />
                         </ListItemIcon>
@@ -75,20 +82,27 @@ const Sidebar = ({ handleNavigation }) => {
                 <Collapse in={cadastrosOpen} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding sx={{ pl: 4 }}>
                         <ListItem disablePadding>
-                            <ListItemButton onClick={() => handleNavigation('/alunos')}> {/* Navegação para alunos */}
+                            <ListItemButton onClick={() => handleSafeNavigation('/alunos')}> 
                                 <ListItemIcon>
                                     <GroupIcon />
                                 </ListItemIcon>
                                 <ListItemText primary="Alunos" />
                             </ListItemButton>
                         </ListItem>
-
                         <ListItem disablePadding>
-                            <ListItemButton onClick={() => handleNavigation('/profissionais')}> {/* Navegação para profissionais */}
+                            <ListItemButton onClick={() => handleSafeNavigation('/profissionais')}>
                                 <ListItemIcon>
                                     <GroupIcon />
                                 </ListItemIcon>
                                 <ListItemText primary="Profissionais" />
+                            </ListItemButton>
+                        </ListItem>
+                        <ListItem disablePadding>
+                            <ListItemButton onClick={() => handleSafeNavigation('/especialidades')}>
+                                <ListItemIcon>
+                                    <GroupIcon />
+                                </ListItemIcon>
+                                <ListItemText primary="Especialidade" />
                             </ListItemButton>
                         </ListItem>
                     </List>

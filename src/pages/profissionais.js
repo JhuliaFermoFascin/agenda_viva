@@ -1,37 +1,27 @@
-// pages/alunos.js
 import React from 'react';
 import Navbar from '../components/navbar';
 import Sidebar from '../components/sidebar';
-import Box from '@mui/material/Box';
+import HealthProfessionalTable from '../components/tabelaProfisionais';
 import { useRouter } from 'next/router';
 
 export default function Alunos() {
-    const router = useRouter();
+  const router = useRouter();
 
-    const handleNavigation = (path) => {
-        router.push(path);
-    };
+  const handleNavigation = (path) => {
+    router.push(path);
+  };
 
-    return (
-        <>
-            <Navbar />
-            <Sidebar handleNavigation={handleNavigation} />
-            <Box
-                component="main"
-                sx={{
-                    flexGrow: 1,
-                    p: 3,
-                    ml: 40, // Ajuste para acomodar a largura da sidebar estendida
-                    transition: 'margin-left 0.3s',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center', // Centraliza o conteúdo horizontalmente
-                    overflowX: 'hidden', // Evita barra de rolagem horizontal
-                }}
-            >
-                <h1>Cadastro de Alunos</h1>
-                {/* Conteúdo da página de Alunos */}
-            </Box>
-        </>
-    );
+  return (
+    <>
+      <Navbar />
+      <Sidebar handleNavigation={handleNavigation} />
+      <main className="flex flex-col items-center justify-center min-h-screen p-3 ml-40 transition-all duration-300">
+        <div className="flex justify-center w-full p-2">
+          <div className="w-4/5 max-w-screen-lg">
+            <HealthProfessionalTable />
+          </div>
+        </div>
+      </main>
+    </>
+  );
 }
