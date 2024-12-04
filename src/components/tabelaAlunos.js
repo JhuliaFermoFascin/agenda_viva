@@ -1,298 +1,107 @@
-// components/tabelaAlunos.js
-import React, { useState } from 'react';
-import { DataGrid, GridToolbar } from '@mui/x-data-grid';
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  IconButton,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import InputMask from 'react-input-mask';
-import FemaleIcon from '@mui/icons-material/Female';
-import MaleIcon from '@mui/icons-material/Male';
+// components/TabelaAlunos.js
+import React, { useEffect, useState } from 'react';
+import { getAlunos } from '../api/services/alunos';
+import { FaPen, FaTrash, FaSearch, FaFemale, FaMale } from 'react-icons/fa';
 
-const StudentTable = () => {
-  const [open, setOpen] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [currentAluno, setCurrentAluno] = useState(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [errors, setErrors] = useState({});
+const TabelaAlunos = () => {
+  const [alunos, setAlunos] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const [alunos, setAlunos] = useState([
-    {
-      id: 1,
-      aluno: 'Alice Souza',
-      responsavel: 'Maria Oliveira',
-      contato: '(48) 99555-0118',
-      dataNascimento: '01/01/2020',
-      cpf: '241.504.856-90',
-      sexo: 'F',
-    },
-    {
-      id: 2,
-      aluno: 'Gabriel Lima',
-      responsavel: 'Ana Paula Silva',
-      contato: '(48) 99555-0118',
-      dataNascimento: '01/01/2020',
-      cpf: '215.689.284-91',
-      sexo: 'M',
-    },
-  ]);
+  useEffect(() => {
+    fetchAlunos();
+  }, []);
 
-  const handleOpenDialog = (aluno = null) => {
-    setCurrentAluno(aluno || { aluno: '', responsavel: '', contato: '', dataNascimento: '', cpf: '', sexo: '' });
-    setEditMode(!!aluno);
-    setErrors({});
-    setDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-    setCurrentAluno(null);
-  };
-
-  const handleOpenDeleteDialog = (aluno) => {
-    setCurrentAluno(aluno);
-    setDeleteOpen(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setDeleteOpen(false);
-    setCurrentAluno(null);
-  };
-
-  const validate = () => {
-    let tempErrors = {};
-    if (!currentAluno.aluno) tempErrors.aluno = 'Nome do aluno é obrigatório';
-    else if (/\d/.test(currentAluno.aluno)) tempErrors.aluno = 'Nome não pode conter números';
-
-    if (!currentAluno.responsavel) tempErrors.responsavel = 'Nome do responsável é obrigatório';
-    else if (/\d/.test(currentAluno.responsavel)) tempErrors.responsavel = 'Nome do responsável não pode conter números';
-
-    if (!currentAluno.contato) tempErrors.contato = 'Contato é obrigatório';
-    else if (/[^0-9()-\s]/.test(currentAluno.contato)) tempErrors.contato = 'Contato deve conter apenas números';
-
-    if (!currentAluno.dataNascimento) tempErrors.dataNascimento = 'Data de nascimento é obrigatória';
-
-    if (!currentAluno.cpf) tempErrors.cpf = 'CPF é obrigatório';
-    else if (/[^0-9.-]/.test(currentAluno.cpf)) tempErrors.cpf = 'CPF deve conter apenas números';
-
-    if (!currentAluno.sexo) tempErrors.sexo = 'Sexo é obrigatório';
-
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
-
-  const handleSave = () => {
-    if (!validate()) return;
-    if (editMode) {
-      setAlunos(alunos.map((a) => (a.id === currentAluno.id ? currentAluno : a)));
-    } else {
-      setAlunos([...alunos, { ...currentAluno, id: alunos.length + 1 }]);
+  const fetchAlunos = async () => {
+    try {
+      const data = await getAlunos();
+      setAlunos(data);
+    } catch (error) {
+      console.error('Erro ao buscar alunos:', error);
     }
-    handleCloseDialog();
   };
 
-  const handleDelete = () => {
-    setAlunos(alunos.filter((a) => a.id !== currentAluno.id));
-    handleCloseDeleteDialog();
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
   };
 
-  const columns = [
-    { field: 'aluno', headerName: 'Aluno', width: 150 },
-    { field: 'responsavel', headerName: 'Responsável', width: 150 },
-    { field: 'contato', headerName: 'Contato', width: 150 },
-    { field: 'dataNascimento', headerName: 'Data de Nascimento', width: 150 },
-    { field: 'cpf', headerName: 'CPF', width: 150 },
-    {
-      field: 'sexo',
-      headerName: 'Sexo',
-      width: 60,
-      renderCell: (params) => (
-        params.value === 'F' ? 
-        <FemaleIcon sx={{ color: 'pink', fontSize: 30, stroke: '#pink', strokeWidth: 0.5 }} /> : 
-        <MaleIcon sx={{ color: '#8ECAE6', fontSize: 30, stroke: '#8ECAE6', strokeWidth: 0.5 }} />
-    )},
-    {
-      field: 'acoes',
-      headerName: 'Ações',
-      width: 100,
-      renderCell: (params) => (
-        <div>
-          <IconButton color="primary" onClick={() => handleOpenDialog(params.row)}>
-            <EditIcon />
-          </IconButton>
-          <IconButton color="error" onClick={() => handleOpenDeleteDialog(params.row)}>
-            <DeleteIcon />
-          </IconButton>
-        </div>
-      ),
-    },
-  ];
+  const filteredAlunos = alunos.filter((aluno) =>
+    aluno.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    aluno.cpf.includes(searchTerm)
+  );
 
   return (
-    <div style={{ height: 'calc(100vh - 150px)', width: '95%', margin: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: '100%' }}>
-        <Button variant="contained" color="primary" onClick={() => handleOpenDialog()} style={{ marginBottom: '10px' }}>
-          Adicionar Aluno
-        </Button>
-        <DataGrid
-          rows={alunos}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
-          checkboxSelection
-          localeText={{
-            noRowsLabel: 'Sem alunos cadastrados',
-            toolbarDensity: 'Densidade',
-            toolbarDensityLabel: 'Densidade',
-            toolbarDensityCompact: 'Compacto',
-            toolbarDensityStandard: 'Padrão',
-            toolbarDensityComfortable: 'Confortável',
-            toolbarColumns: 'Colunas',
-            toolbarColumnsLabel: 'Selecionar colunas',
-            toolbarFilters: 'Filtros',
-            toolbarFiltersLabel: 'Mostrar filtros',
-            toolbarExport: 'Exportar',
-            toolbarExportLabel: 'Exportar',
-            toolbarExportCSV: 'Baixar como CSV',
-            toolbarExportPrint: 'Imprimir',
-            columnsPanelTextFieldLabel: 'Encontrar coluna',
-            columnsPanelTextFieldPlaceholder: 'Título da coluna',
-            columnsPanelShowAllButton: 'Mostrar tudo',
-            columnsPanelHideAllButton: 'Ocultar tudo',
-            filterPanelAddFilter: 'Adicionar filtro',
-            filterPanelDeleteIconLabel: 'Excluir',
-            filterPanelOperators: 'Operadores',
-            filterPanelOperatorAnd: 'E',
-            filterPanelOperatorOr: 'Ou',
-            filterPanelColumns: 'Colunas',
-            filterPanelInputLabel: 'Valor',
-            filterPanelInputPlaceholder: 'Filtrar valor',
-            footerRowSelected: (count) => `${count.toLocaleString()} linha(s) selecionada(s)`,
-            footerTotalRows: 'Total de linhas:',
-            footerTotalVisibleRows: (visibleCount, totalCount) =>
-              `${visibleCount.toLocaleString()} de ${totalCount.toLocaleString()}`,
-          }}
-        />
-
-        {/* Dialog de Cadastro/Edição */}
-        <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-          <DialogTitle>{editMode ? 'Editar Aluno' : 'Adicionar Aluno'}</DialogTitle>
-          <DialogContent>
-            <TextField
-              required
-              error={!!errors.aluno}
-              helperText={errors.aluno}
-              autoFocus
-              margin="dense"
-              label="Nome do Aluno"
-              fullWidth
-              value={currentAluno?.aluno || ''}
-              onChange={(e) => setCurrentAluno({ ...currentAluno, aluno: e.target.value })}
-            />
-            <TextField
-              required
-              error={!!errors.responsavel}
-              helperText={errors.responsavel}
-              margin="dense"
-              label="Responsável"
-              fullWidth
-              value={currentAluno?.responsavel || ''}
-              onChange={(e) => setCurrentAluno({ ...currentAluno, responsavel: e.target.value })}
-            />
-            <InputMask
-              mask="(99) 99999-9999"
-              value={currentAluno?.contato || ''}
-              onChange={(e) => setCurrentAluno({ ...currentAluno, contato: e.target.value })}
-            >
-              {() => (
-                <TextField
-                  required
-                  error={!!errors.contato}
-                  helperText={errors.contato}
-                  margin="dense"
-                  label="Contato"
-                  fullWidth
-                />
-              )}
-            </InputMask>
-            <InputMask
-              mask="99/99/9999"
-              value={currentAluno?.dataNascimento || ''}
-              onChange={(e) => setCurrentAluno({ ...currentAluno, dataNascimento: e.target.value })}
-            >
-              {() => (
-                <TextField
-                  required
-                  error={!!errors.dataNascimento}
-                  helperText={errors.dataNascimento}
-                  margin="dense"
-                  label="Data de Nascimento"
-                  fullWidth
-                />
-              )}
-            </InputMask>
-            <InputMask
-              mask="999.999.999-99"
-              value={currentAluno?.cpf || ''}
-              onChange={(e) => setCurrentAluno({ ...currentAluno, cpf: e.target.value })}
-            >
-              {() => (
-                <TextField
-                  required
-                  error={!!errors.cpf}
-                  helperText={errors.cpf}
-                  margin="dense"
-                  label="CPF"
-                  fullWidth
-                />
-              )}
-            </InputMask>
-            <FormControl component="fieldset" required error={!!errors.sexo}>
-              <FormLabel component="legend">Sexo</FormLabel>
-              <RadioGroup
-                row
-                value={currentAluno?.sexo || ''}
-                onChange={(e) => setCurrentAluno({ ...currentAluno, sexo: e.target.value })}
-              >
-                <FormControlLabel value="M" control={<Radio />} label="Masculino" />
-                <FormControlLabel value="F" control={<Radio />} label="Feminino" />
-              </RadioGroup>
-            </FormControl>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancelar</Button>
-            <Button onClick={handleSave} color="primary">
-              Salvar
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Dialog de Exclusão */}
-        <Dialog open={deleteOpen} onClose={handleCloseDeleteDialog}>
-          <DialogTitle>Tem certeza que deseja excluir?</DialogTitle>
-          <DialogActions>
-            <Button onClick={handleCloseDeleteDialog}>Cancelar</Button>
-            <Button onClick={handleDelete} color="error">
-              Excluir
-            </Button>
-          </DialogActions>
-        </Dialog>
+    <div className="p-8 bg-gray-100 min-h-screen">
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-700">Cadastro de alunos</h2>
+          <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+            + Aluno
+          </button>
+        </div>
+        <div className="flex items-center justify-end mb-4">
+          <input
+            type="text"
+            placeholder="Pesquise por nome ou CPF"
+            value={searchTerm}
+            onChange={handleSearch}
+            className="border border-gray-300 rounded-lg px-3 py-2 mr-2"
+          />
+          <FaSearch className="text-gray-500" />
+        </div>
+        <table className="w-full text-left table-auto">
+          <thead>
+            <tr>
+              <th className="border-b-2 py-3 px-4 text-gray-600 font-semibold">Aluno</th>
+              <th className="border-b-2 py-3 px-4 text-gray-600 font-semibold">Responsável</th>
+              <th className="border-b-2 py-3 px-4 text-gray-600 font-semibold">Contato</th>
+              <th className="border-b-2 py-3 px-4 text-gray-600 font-semibold">Data Nasc.</th>
+              <th className="border-b-2 py-3 px-4 text-gray-600 font-semibold">CPF</th>
+              <th className="border-b-2 py-3 px-4 text-gray-600 font-semibold">Sexo</th>
+              <th className="border-b-2 py-3 px-4 text-gray-600 font-semibold">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredAlunos.length > 0 ? (
+              filteredAlunos.map((aluno) => (
+                <tr key={aluno.id} className="hover:bg-gray-50">
+                  <td className="border-b py-3 px-4 text-gray-700">{aluno.nome}</td>
+                  <td className="border-b py-3 px-4 text-gray-700">{aluno.responsavel}</td>
+                  <td className="border-b py-3 px-4 text-gray-700">{aluno.contato_responsavel}</td>
+                  <td className="border-b py-3 px-4 text-gray-700">{aluno.data_nascimento}</td>
+                  <td className="border-b py-3 px-4 text-gray-700">{aluno.cpf}</td>
+                  <td className="border-b py-3 px-4 text-gray-700">
+                    {aluno.sexo === 'F' ? (
+                      <FaFemale className="text-pink-500" />
+                    ) : (
+                      <FaMale className="text-blue-500" />
+                    )}
+                  </td>
+                  <td className="border-b py-3 px-4 text-gray-700 flex items-center space-x-2">
+                    <button className="text-blue-500 hover:text-blue-600">
+                      <FaPen />
+                    </button>
+                    <button className="text-red-500 hover:text-red-600">
+                      <FaTrash />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="text-center py-4 text-gray-500">
+                  Nenhum aluno encontrado
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+        <div className="mt-4 flex justify-between items-center">
+          <span className="text-sm text-gray-500">Total de {filteredAlunos.length} registros</span>
+          {/* Aqui você pode implementar paginação se for necessário */}
+        </div>
       </div>
     </div>
   );
 };
 
-export default StudentTable;
+export default TabelaAlunos;
