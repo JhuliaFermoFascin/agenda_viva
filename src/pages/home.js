@@ -47,6 +47,15 @@ export default function Home() {
             </div>
             <h6 className="mt-4 text-lg font-medium">Profissionais</h6>
           </div>
+          <div
+            className="cursor-pointer text-center bg-gray-100 hover:bg-gray-200 p-6 rounded-lg shadow-md"
+            onClick={() => handleNavigation('/especialidades')}
+          >
+            <div className="text-yellow-500 text-6xl">
+              <BadgeIcon fontSize="inherit" />
+            </div>
+            <h6 className="mt-4 text-lg font-medium">Especialidades</h6>
+          </div>
         </div>
       </main>
     </>
