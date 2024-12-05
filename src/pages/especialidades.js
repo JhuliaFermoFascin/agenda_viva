@@ -117,11 +117,11 @@ export default function Especialidades() {
     <>
       <Navbar />
       <Sidebar />
-      <main className="flex-1 p-6 transition-all duration-300 flex flex-col bg-gray-100 h-screen">
-        <h1 className="mt-16 text-2xl font-bold mb-6 text-[#023047]">
+      <main className="flex-1 p-6 transition-all duration-300 flex flex-col bg-gray-100 h-screen mt-20">
+        <h1 className="mt-16 text-2xl font-bold mb-6 text-[#023047] ml-80">
           Cadastro de Especialidade
         </h1>
-        <div className="bg-white rounded-lg shadow-md p-6 w-full max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-md p-6 w-full max-w-4xl mx-auto ml-80">
           <div className="flex justify-between items-center mb-4">
             <button
               onClick={() => {

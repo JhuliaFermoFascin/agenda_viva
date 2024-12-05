@@ -17,9 +17,9 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <Sidebar handleNavigation={handleNavigation} />
-      <main className="flex items-center justify-center h-screen p-3 transition-all duration-300">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 w-full max-w-6xl">
+      <Sidebar />
+      <main className="flex items-center justify-center h-screen p-3 transition-all duration-300 ml-60">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-10 w-full max-w-6xl">
           <div
             className="cursor-pointer text-center bg-gray-100 hover:bg-gray-200 p-6 rounded-lg shadow-md"
             onClick={() => handleNavigation('/alunos')}

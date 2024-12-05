@@ -15,22 +15,20 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import GroupIcon from '@mui/icons-material/Group';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { useRouter } from 'next/router';
 
-const Sidebar = ({ handleNavigation }) => {
+const Sidebar = () => {
+    const router = useRouter();
     const [cadastrosOpen, setCadastrosOpen] = React.useState(false);
     const { isNavBarOpen } = useGlobalState();
-
-    const handleSafeNavigation = (path) => {
-        if (typeof handleNavigation === 'function') {
-            handleNavigation(path);
-        } else {
-            console.error(`handleNavigation is not a function. Attempted to navigate to: ${path}`);
-        }
-    };
 
     const handleCadastrosClick = () => {
         setCadastrosOpen(!cadastrosOpen);
     };
+
+    const handleNavigation = (path) => {
+        router.push(path); 
+      };
 
     return (
         <Drawer
@@ -52,7 +50,7 @@ const Sidebar = ({ handleNavigation }) => {
             <Toolbar /> 
             <List>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={() => handleSafeNavigation('/home')}> 
+                    <ListItemButton onClick={() => handleNavigation('/home')}> 
                         <ListItemIcon>
                             <HomeIcon />
                         </ListItemIcon>
@@ -61,7 +59,7 @@ const Sidebar = ({ handleNavigation }) => {
                 </ListItem>
 
                 <ListItem disablePadding>
-                    <ListItemButton onClick={() => handleSafeNavigation('/agendamento')}> 
+                    <ListItemButton onClick={() => handleNavigation('/agendamento')}> 
                         <ListItemIcon>
                             <EventNoteIcon />
                         </ListItemIcon>
@@ -82,7 +80,7 @@ const Sidebar = ({ handleNavigation }) => {
                 <Collapse in={cadastrosOpen} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding sx={{ pl: 4 }}>
                         <ListItem disablePadding>
-                            <ListItemButton onClick={() => handleSafeNavigation('/alunos')}> 
+                            <ListItemButton onClick={() => handleNavigation('/alunos')}> 
                                 <ListItemIcon>
                                     <GroupIcon />
                                 </ListItemIcon>
@@ -90,7 +88,7 @@ const Sidebar = ({ handleNavigation }) => {
                             </ListItemButton>
                         </ListItem>
                         <ListItem disablePadding>
-                            <ListItemButton onClick={() => handleSafeNavigation('/profissionais')}>
+                            <ListItemButton onClick={() => handleNavigation('/profissionais')}>
                                 <ListItemIcon>
                                     <GroupIcon />
                                 </ListItemIcon>
@@ -98,7 +96,7 @@ const Sidebar = ({ handleNavigation }) => {
                             </ListItemButton>
                         </ListItem>
                         <ListItem disablePadding>
-                            <ListItemButton onClick={() => handleSafeNavigation('/especialidades')}>
+                            <ListItemButton onClick={() => handleNavigation('/especialidades')}>
                                 <ListItemIcon>
                                     <GroupIcon />
                                 </ListItemIcon>

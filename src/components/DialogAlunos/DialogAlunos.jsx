@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { parse, format, addDays } from "date-fns";
 
 const DialogAlunos = ({
   open,
@@ -10,11 +11,38 @@ const DialogAlunos = ({
 }) => {
   if (!open) return null;
 
+  const formatPhoneNumber = (value) => {
+    if (!value) return value;
+
+    const onlyNumbers = value.replace(/\D/g, "");
+    if (onlyNumbers.length <= 10) {
+      return onlyNumbers.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+    } else {
+      return onlyNumbers.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
+    }
+  };
+
   const handleInputChange = (field, value) => {
-    setAluno((prevAluno) => ({
-      ...prevAluno,
-      [field]: value,
-    }));
+    if (field === "data_nascimento") {
+      const parsedDate = parse(value, "yyyy-MM-dd", new Date());
+      if (!isNaN(parsedDate)) {
+        const formattedDate = format(parsedDate, "yyyy-MM-dd");
+        setAluno((prevAluno) => ({
+          ...prevAluno,
+          [field]: formattedDate,
+        }));
+      } else {
+        setAluno((prevAluno) => ({
+          ...prevAluno,
+          [field]: value, 
+        }));
+      }
+    } else {
+      setAluno((prevAluno) => ({
+        ...prevAluno,
+        [field]: field === "contato_responsavel" ? formatPhoneNumber(value) : value,
+      }));
+    }
   };
 
   return (
@@ -40,7 +68,7 @@ const DialogAlunos = ({
           <input
             type="date"
             placeholder="Data de Nascimento"
-            value={aluno.data_nascimento}
+            value={aluno.data_nascimento ? format(addDays(new Date(aluno.data_nascimento), 1), 'yyyy-MM-dd') : ''}
             onChange={(e) => handleInputChange("data_nascimento", e.target.value)}
             className={`border rounded-lg py-2 px-4 text-sm w-full ${
               errorMessage.data_nascimento ? "border-red-500" : "border-gray-300"
@@ -54,6 +82,7 @@ const DialogAlunos = ({
             type="text"
             placeholder="Contato do responsável"
             value={aluno.contato_responsavel}
+            maxLength={15}
             onChange={(e) => handleInputChange("contato_responsavel", e.target.value)}
             className={`border rounded-lg py-2 px-4 text-sm w-full ${
               errorMessage.contato_responsavel ? "border-red-500" : "border-gray-300"
@@ -62,22 +91,6 @@ const DialogAlunos = ({
           {errorMessage.contato_responsavel && (
             <p className="text-red-500 text-sm">{errorMessage.contato_responsavel}</p>
           )}
-
-          <select
-            value={aluno.sexo}
-            onChange={(e) => handleInputChange("sexo", e.target.value)}
-            className={`border rounded-lg py-2 px-4 text-sm w-full ${
-              errorMessage.sexo ? "border-red-500" : "border-gray-300"
-            }`}
-          >
-            <option value="">Selecione o sexo</option>
-            <option value="M">Masculino</option>
-            <option value="F">Feminino</option>
-          </select>
-          {errorMessage.sexo && (
-            <p className="text-red-500 text-sm">{errorMessage.sexo}</p>
-          )}
-
           <div className="flex justify-end gap-2">
             <button
               type="button"

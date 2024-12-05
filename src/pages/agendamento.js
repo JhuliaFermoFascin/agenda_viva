@@ -252,23 +252,22 @@ export default function Agendamentos() {
     return (
         <>
             <Navbar />
-            <Sidebar handleNavigation={handleNavigation} />
+            <Sidebar />
             <Box
                 component="main"
                 sx={{
                     flexGrow: 1,
                     p: 3,
-                    ml: 40,
-                    mt: 20,
                     transition: 'margin-left 0.3s',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     overflowY: 'auto',
-                    maxHeight: '100vh',
+                    height: '100vh',
+                    bgcolor: 'lightGray'
                 }}
             >
-                <h2 style={{ fontSize: 20 }}>AGENDAMENTOS</h2>
+                <h2 style={{ fontSize: 20, marginTop: 180 }}>AGENDAMENTOS</h2>
                 <br />
                 {loading ? (
                     <p>Carregando...</p>

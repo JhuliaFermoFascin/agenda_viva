@@ -18,7 +18,7 @@ const DialogEspecialidade = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 bg-gray-800">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
         <h2 className="text-xl font-semibold mb-4">Adicionar Especialidade</h2>
         <form className="flex flex-col gap-4" onKeyDown={handleKeyDown}>

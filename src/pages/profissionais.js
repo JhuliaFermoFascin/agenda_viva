@@ -25,13 +25,12 @@ export default function Profissionais() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Buscar todos os profissionais do backend
   const fetchProfissionais = async () => {
     try {
       setLoading(true);
       const response = await api.get(endpoints.getAllFuncionarios());
       setProfissionais(response.data || []);
-      setFilteredProfissionais(response.data || []); // Também atualiza a lista filtrada inicialmente
+      setFilteredProfissionais(response.data || []);
     } catch (error) {
       console.error('Erro ao buscar profissionais:', error);
       setError('Erro ao carregar profissionais.');
@@ -40,7 +39,6 @@ export default function Profissionais() {
     }
   };
 
-  // Buscar todas as especialidades do backend
   const fetchEspecialidades = async () => {
     try {
       const response = await api.get(endpoints.getAllEspecialidades());
@@ -101,11 +99,8 @@ export default function Profissionais() {
           updatedAt: now,
         });
 
-        // Atualiza a lista de profissionais
         fetchProfissionais();
       }
-
-      // Limpar estados
       setNewProfissional({
         nome: '',
         id_especialidade: '',
@@ -155,11 +150,11 @@ export default function Profissionais() {
     <>
       <Navbar />
       <Sidebar />
-      <main className="flex-1 p-6 transition-all duration-300 flex flex-col bg-gray-100 h-screen">
-        <h1 className="mt-16 text-2xl font-bold mb-6 text-[#023047]">
+      <main className="flex-1 p-6 transition-all duration-300 flex flex-col bg-gray-100 h-screen mt-20">
+        <h1 className="mt-16 text-2xl font-bold mb-6 text-[#023047] ml-80">
           Cadastro de Profissionais
         </h1>
-        <div className="bg-white rounded-lg shadow-md p-6 w-full max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-md p-6 w-full max-w-4xl mx-auto ml-80">
           <div className="flex justify-between items-center mb-4">
             <input
               type="text"

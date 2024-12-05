@@ -8,6 +8,7 @@ import FemaleIcon from "@mui/icons-material/Female";
 import MaleIcon from "@mui/icons-material/Male";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { addDays, format } from 'date-fns';
 
 export default function Alunos() {
   const [alunos, setAlunos] = useState([]);
@@ -22,7 +23,6 @@ export default function Alunos() {
     nome: "",
     data_nascimento: "",
     contato_responsavel: "",
-    sexo: "",
   });
   const [errorMessage, setErrorMessage] = useState({});
   const [loading, setLoading] = useState(false);
@@ -33,7 +33,7 @@ export default function Alunos() {
       setLoading(true);
       const response = await api.get(endpoints.getAllAlunos());
       setAlunos(response.data || []);
-      setFilteredAlunos(response.data || []); // Também atualizar a lista filtrada inicialmente
+      setFilteredAlunos(response.data || []);
     } catch (error) {
       console.error("Erro ao buscar alunos:", error);
       setError("Erro ao carregar alunos.");
@@ -46,7 +46,6 @@ export default function Alunos() {
     fetchAlunos();
   }, []);
 
-  // Função de filtro para a barra de pesquisa
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
@@ -68,17 +67,14 @@ export default function Alunos() {
     if (!newAluno.contato_responsavel.trim()) {
       errors.contato_responsavel = "O contato do responsável é obrigatório!";
     }
-    if (!newAluno.sexo) {
-      errors.sexo = "O sexo é obrigatório!";
-    }
 
     setErrorMessage(errors);
-    return Object.keys(errors).length === 0; // Retorna true se não houver erros
+    return Object.keys(errors).length === 0; 
   };
 
   const saveAluno = async () => {
     if (!validateAluno()) {
-      return; // Se houver erros, interrompa o processamento
+      return;
     }
 
     try {
@@ -86,13 +82,11 @@ export default function Alunos() {
       const now = new Date().toISOString();
 
       if (isEditing && currentAluno) {
-        // Atualizar Aluno Existente
         const response = await api.put(endpoints.updateAluno(currentAluno.id), {
           ...newAluno,
           updatedAt: now,
         });
 
-        // Atualiza o Aluno na Lista
         setAlunos((prevAlunos) =>
           prevAlunos.map((aluno) =>
             aluno.id === currentAluno.id ? response.data : aluno
@@ -104,23 +98,19 @@ export default function Alunos() {
           )
         );
       } else {
-        // Cria um Novo Aluno
         const response = await api.post(endpoints.addAluno(), {
           ...newAluno,
           createdAt: now,
           updatedAt: now,
         });
 
-        // Atualiza a Lista de Alunos
         fetchAlunos();
       }
 
-      // Limpar Estados
       setNewAluno({
         nome: "",
         data_nascimento: "",
         contato_responsavel: "",
-        sexo: "",
       });
       setIsEditing(false);
       setCurrentAluno(null);
@@ -139,7 +129,6 @@ export default function Alunos() {
       nome: "",
       data_nascimento: "",
       contato_responsavel: "",
-      sexo: "",
     });
     setIsEditing(false);
     setIsDialogOpen(true);
@@ -158,7 +147,7 @@ export default function Alunos() {
     try {
       setLoading(true);
       await api.delete(endpoints.deleteAluno(id));
-      fetchAlunos(); // Atualiza a lista de alunos após deletar
+      fetchAlunos();
     } catch (error) {
       console.error("Erro ao excluir aluno:", error);
       setError("Erro ao excluir aluno.");
@@ -176,11 +165,11 @@ export default function Alunos() {
     <>
       <Navbar />
       <Sidebar />
-      <main className="flex-1 p-6 transition-all duration-300 flex flex-col bg-gray-100 h-screen">
-        <h1 className="mt-16 text-2xl font-bold mb-6 text-[#023047]">
+      <main className="flex-1 p-6 transition-all duration-300 flex flex-col bg-gray-100 h-screen mt-20">
+        <h1 className="mt-16 text-2xl font-bold mb-6 text-[#023047] ml-80">
           Cadastro de Alunos
         </h1>
-        <div className="bg-white rounded-lg shadow-md p-6 w-full max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-md p-6 w-full max-w-4xl mx-auto ml-80">
           <div className="flex justify-between items-center mb-4">
             <input
               type="text"
@@ -213,7 +202,6 @@ export default function Alunos() {
                     <th className="py-2 px-4 text-[#8ecae6] text-left">
                       Contato do Responsável
                     </th>
-                    <th className="py-2 px-4 text-[#8ecae6] text-left">Sexo</th>
                     <th className="py-2 px-4 text-[#8ecae6] text-right">Ações</th>
                   </tr>
                 </thead>
@@ -226,16 +214,9 @@ export default function Alunos() {
                       <td className="py-2 px-4">{aluno.id}</td>
                       <td className="py-2 px-4">{aluno.nome}</td>
                       <td className="py-2 px-4">
-                        {new Date(aluno.data_nascimento).toLocaleDateString()}
+                        {aluno.data_nascimento ? format(addDays(new Date(aluno.data_nascimento), 1), 'dd/MM/yyyy') : 'Não informado.'}
                       </td>
                       <td className="py-2 px-4">{aluno.contato_responsavel}</td>
-                      <td className="py-2 px-4">
-                        {aluno.sexo === "F" ? (
-                          <FemaleIcon className="text-pink-500" />
-                        ) : (
-                          <MaleIcon className="text-blue-500" />
-                        )}
-                      </td>
                       <td className="py-2 px-4 text-right flex justify-end gap-2">
                         <button onClick={() => openEditAlunoDialog(aluno)}>
                           <EditIcon />
@@ -252,7 +233,6 @@ export default function Alunos() {
                 <span className="text-gray-400">
                   Total de {filteredAlunos.length} registros
                 </span>
-                {/* Implementação da Paginação */}
                 <div className="flex space-x-2">
                   <button
                     onClick={() => setCurrentPage(currentPage - 1)}
